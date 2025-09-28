@@ -7,7 +7,7 @@ type Env = {
   TABLE_ID: string;
 };
 
-const app = new Hono<{ Env: Env }>(); // ← 改成这样
+const app = new Hono<{ Env: Env }>(); // ← 正确写法
 
 async function getTenantAccessToken(env: Env) {
   const res = await fetch('https://open.feishu.cn/open-api/auth/v3/tenant_access_token/internal', {
@@ -24,7 +24,7 @@ async function getTenantAccessToken(env: Env) {
 }
 
 app.post('/receive', async (c) => {
-  const env = c.env; // ← 环境变量在这里
+  const env = c.env; // ← 获取环境变量
   const data = await c.req.json();
 
   if (!data.goodsId || !data.deviceId) {
