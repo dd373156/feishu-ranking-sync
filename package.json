@@ -2,9 +2,16 @@
   "name": "feishu-ranking-sync",
   "version": "1.0.0",
   "scripts": {
-    "dev": "vercel dev"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
   },
   "dependencies": {
-    "hono": "^4.0.0"
+    "next": "^13.0.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^4.9.0"
   }
 }
