@@ -1,6 +1,9 @@
 import { Hono } from 'hono'
 
-// 定义环境变量类型
+export const config = {
+  runtime: 'edge', // ✅ 启用 Edge Runtime（更快 + 30秒超时）
+};
+
 type Env = {
   FEISHU_APP_ID: string;
   FEISHU_APP_SECRET: string;
@@ -8,8 +11,9 @@ type Env = {
   TABLE_ID: string;
 };
 
-// ✅ 使用 Hono<{}>，不传任何类型
 const app = new Hono<{}>();
+
+// ... 后面逻辑不变
 
 // 获取租户 token 的函数
 async function getTenantAccessToken(env: Env) {
