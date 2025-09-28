@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
 
 export const config = {
-  runtime: 'edge', // ✅ 启用 Edge Runtime（更快 + 30秒超时）
+  runtime: 'edge',
 };
 
 type Env = {
@@ -13,9 +13,6 @@ type Env = {
 
 const app = new Hono<{}>();
 
-// ... 后面逻辑不变
-
-// 获取租户 token 的函数
 async function getTenantAccessToken(env: Env) {
   const res = await fetch('https://open.feishu.cn/open-api/auth/v3/tenant_access_token/internal', {
     method: 'POST',
@@ -25,15 +22,12 @@ async function getTenantAccessToken(env: Env) {
       app_secret: env.FEISHU_APP_SECRET,
     }),
   });
-
   const data = await res.json();
   return data.tenant_access_token;
 }
 
 app.post('/receive', async (c) => {
-  // ✅ 使用 c.env 获取环境变量
-  const env = c.env as unknown as Env; // ← 强制类型转换
-
+  const env = c.env as unknown as Env;
   const data = await c.req.json();
 
   if (!data.goodsId || !data.deviceId) {
@@ -42,7 +36,7 @@ app.post('/receive', async (c) => {
 
   const token = await getTenantAccessToken(env);
 
-  // Step 1: Search existing records
+  // Step 1: Search
   const searchRes = await fetch(
     `https://open.feishu.cn/open-api/bitable/v1/apps/${env.BITABLE_APP_TOKEN}/tables/${env.TABLE_ID}/records/search`,
     {
@@ -64,20 +58,25 @@ app.post('/receive', async (c) => {
   );
 
   const searchResult = await searchRes.json();
-  const records = searchResult.data.items || [];
+  const records = searchResult.data?.items || [];
 
-  // Step 2: Delete existing records
-  for (const record of records) {
+  // Step 2: Batch delete (关键优化！)
+  if (records.length > 0) {
+    const recordIds = records.map((r: any) => r.record_id);
     await fetch(
-      `https://open.feishu.cn/open-api/bitable/v1/apps/${env.BITABLE_APP_TOKEN}/tables/${env.TABLE_ID}/records/${record.record_id}`,
+      `https://open.feishu.cn/open-api/bitable/v1/apps/${env.BITABLE_APP_TOKEN}/tables/${env.TABLE_ID}/records/batch_delete`,
       {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` },
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ record_ids: recordIds }),
       }
     );
   }
 
-  // Step 3: Create new record
+  // Step 3: Create
   await fetch(
     `https://open.feishu.cn/open-api/bitable/v1/apps/${env.BITABLE_APP_TOKEN}/tables/${env.TABLE_ID}/records`,
     {
