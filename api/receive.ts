@@ -1,5 +1,6 @@
 import { Hono } from 'hono'
 
+// 定义环境变量类型
 type Env = {
   FEISHU_APP_ID: string;
   FEISHU_APP_SECRET: string;
@@ -7,8 +8,10 @@ type Env = {
   TABLE_ID: string;
 };
 
-const app = new Hono<{ Env: Env }>(); // ← 正确写法
+// ✅ 使用 Hono<{}>，不传任何类型
+const app = new Hono<{}>();
 
+// 获取租户 token 的函数
 async function getTenantAccessToken(env: Env) {
   const res = await fetch('https://open.feishu.cn/open-api/auth/v3/tenant_access_token/internal', {
     method: 'POST',
@@ -24,7 +27,9 @@ async function getTenantAccessToken(env: Env) {
 }
 
 app.post('/receive', async (c) => {
-  const env = c.env; // ← 获取环境变量
+  // ✅ 使用 c.env 获取环境变量
+  const env = c.env as unknown as Env; // ← 强制类型转换
+
   const data = await c.req.json();
 
   if (!data.goodsId || !data.deviceId) {
