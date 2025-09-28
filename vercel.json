@@ -1,5 +1,13 @@
 {
-  "routes": [
-    { "src": "/receive", "dest": "/api/receive" }
-  ]
+  "functions": {
+    "api/receive.ts": {
+      "runtime": "edge",
+      "env": [
+        "FEISHU_APP_ID",
+        "FEISHU_APP_SECRET",
+        "BITABLE_APP_TOKEN",
+        "TABLE_ID"
+      ]
+    }
+  }
 }
