@@ -7,7 +7,7 @@ type Env = {
   TABLE_ID: string;
 };
 
-const app = new Hono<Bindings<Env>>();
+const app = new Hono<{ Env: Env }>(); // ← 改成这样
 
 async function getTenantAccessToken(env: Env) {
   const res = await fetch('https://open.feishu.cn/open-api/auth/v3/tenant_access_token/internal', {
@@ -24,10 +24,9 @@ async function getTenantAccessToken(env: Env) {
 }
 
 app.post('/receive', async (c) => {
-  const env = c.env; // ← 获取环境变量
+  const env = c.env; // ← 环境变量在这里
   const data = await c.req.json();
 
-  // 检查必填字段
   if (!data.goodsId || !data.deviceId) {
     return c.text('Missing goodsId or deviceId', 400);
   }
