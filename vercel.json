@@ -1,0 +1,8 @@
+{
+  "builds": [
+    { "src": "app/**/*", "use": "@vercel/next" }
+  ],
+  "routes": [
+    { "src": "/receive", "dest": "/api/receive" }
+  ]
+}
